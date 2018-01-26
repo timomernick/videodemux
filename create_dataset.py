@@ -2,6 +2,8 @@ import glob
 import sys
 from videodemux import Demux
 import h5py
+import hashlib
+
 
 def create_dataset(input_filenames, output_filename):
     h5f = h5py.File(output_filename, "w")
@@ -14,7 +16,9 @@ def create_dataset(input_filenames, output_filename):
             sys.exit(1)
 
         # Add to HDF5
-        h5f_group = h5f.create_group(input_filename)
+        # Hash the filename because h5py does not allow slashes in group names.
+        group_name = hashlib.md5(input_filename.encode()).hexdigest()
+        h5f_group = h5f.create_group(group_name)
         h5f_group.create_dataset("images", shape=images.shape, dtype=images.dtype, data=images)
         h5f_group.create_dataset("audio", shape=audio.shape, dtype=audio.dtype, data=audio)
 
